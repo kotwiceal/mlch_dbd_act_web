@@ -1,0 +1,6 @@
+poetry.lock
+.venv
+.vscode
+__pycache__/
+src/static/node_modules
+src/static/package-lock.json

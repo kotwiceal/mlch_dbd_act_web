@@ -1,0 +1,15 @@
+[tool.poetry]
+name = "mlch-dbd-act-web"
+version = "0.1.0"
+description = ""
+authors = ["kotwiceal <kotvitskyaya@gmail.com>"]
+readme = "README.md"
+packages = [{include = "mlch_dbd_act_web"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+flask = "^2.3.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
