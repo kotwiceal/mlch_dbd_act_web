@@ -2,9 +2,9 @@
 Return: modified flask instance
 """
 # load app instance
-from src import app
+from src import app, esp32
 # load suppoting functional
-from flask import Response
+from flask import Response, request
 
 @app.route('/')
 def index():
@@ -19,9 +19,13 @@ def route_static_file(path):
 @app.route('/set-param', methods = ['POST'])
 def set_param():
     """Send JSON data from client to microcontroller."""
-    return Response(status = 200)
+    response = request.get_json()
+    status = esp32.send(response['type'], response['data'])
+    return Response(status = 200 if status else 500)
 
 @app.route('/get-param', methods = ['GET'])
 def get_param():
     """Send JSON data from microcontroller to client."""
-    return Response(status = 200)
+    # data = esp32.get_data('dict') # to bypass requesting
+    data, status = esp32.request()
+    return data
