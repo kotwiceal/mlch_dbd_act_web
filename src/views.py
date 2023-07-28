@@ -9,12 +9,13 @@ from flask import Response, request
 @app.route('/')
 def index():
     """Assign enter point."""
-    return Response(status = 200)
+    data, status = esp32.request()
+    return app.send_static_file('./dist/main.html')
 
 @app.route('/<path:path>')
 def route_static_file(path):
     """Route static files located in `static_url_path`"""
-    return app.send_static_file(path)
+    return app.send_static_file('./dist/' + path)
 
 @app.route('/set-param', methods = ['POST'])
 def set_param():

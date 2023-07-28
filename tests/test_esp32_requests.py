@@ -57,8 +57,8 @@ def test_request_setparam_http(client, mcu, mcu_http_server, request_setparam_ex
     # check status code of response_http_server
     assert response_http_server.status_code == 200
     
-    # compare result and expected value
-    assert request_setparam_expected == response_http_server.json()
+    # compare result and expected value (json.loads(...) is necessary since MCU json handler receive serialized json)
+    assert request_setparam_expected == json.loads(response_http_server.json())
     
 
     
