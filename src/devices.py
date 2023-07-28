@@ -1,7 +1,7 @@
 """This module implements a microcontroller wireless interface."""
 import json, socket, requests, numpy
 
-esp32_net_config = dict(host = '127.0.0.1', udp_port = 8080, http_port = 8090, 
+esp32_net_config = dict(host = '192.168.1.1', udp_port = 8080, http_port = 8090, 
     url_send = '/set-param', url_request = '/get-param')
 esp32_data = dict(dac = dict(index = numpy.arange(16), value = numpy.random.randint(0, 4000, 16, dtype = int)),
         fm = dict(index = numpy.arange(16), value = numpy.random.randint(10, 80, 16, dtype = int)))
@@ -31,6 +31,7 @@ class ESP32:
         self.net_config = net_config
         # assing default data
         self.data = data
+        self.data_send = data
         # bind keys of data
         self.unique_fields = set(self.data.keys())
         # create links
@@ -55,7 +56,11 @@ class ESP32:
         try:
             for key in data.keys():
                 if key in self.unique_fields:
-                    self.data[key]['value'][data[key]['index']] = data[key]['value']
+                    if 'index' in data[key].keys():
+                        self.data[key]['value'][data[key]['index']] = data[key]['value']
+                    else:
+                        self.data[key]['value'][0::] = data[key]['value']
+            self.data_send = data
             return True
         except Exception:
             return False
@@ -94,7 +99,7 @@ class ESP32:
     def _udp_send(self) -> None:
         """Send data via UDP socket."""
         try:
-            message = bytes(self.get_data('str'), 'utf-8')
+            message = bytes(json.dumps(self.data_send, cls = NumpyEncoder), 'utf-8')
             sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             sock.sendto(message, self.udp_addr)
             self.state_send = True
@@ -104,7 +109,8 @@ class ESP32:
     def _http_send(self) -> None:
         """Send data via HTTP."""
         try:
-            response = requests.post(self.url_send, json = self.get_data('dict'))
+            # (json.dumps(...) is necessary since MCU json handler receive serialized json)
+            response = requests.post(self.url_send, json = json.dumps(self.data_send, cls = NumpyEncoder))
             if (response.status_code == 200):
                 self.response = True
             else:
